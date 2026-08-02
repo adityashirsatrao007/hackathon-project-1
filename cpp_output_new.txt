@@ -1,0 +1,4 @@
+Γ£à Done
+
+[Async Worker] Non-Blocking FLUSH for 1 items:
+[{"event_id": "ab944c8555861b59cf5750042e0fb45b", "project_id": "2", "timestamp": "2026-04-04T18:57:43.000000+00:00", "level": "error", "release": "1.0.0", "client": {"sdk": "tracelify.cpp"}, "error": {"type": "Exception", "message": "division by zero", "stacktrace": "No stacktrace available in std C++"}, "context": {"os": "Windows", "runtime": "cpp", "cpp_version": "14"}, "user": {"id": "user_101"}, "tags": {"env": "Production"}, "breadcrumbs": [{"message": "App started"}, {"message": "User clicked button"}]}]

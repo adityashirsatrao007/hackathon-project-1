@@ -1,0 +1,12 @@
+# Auto detect text files and perform LF normalization
+* text=auto
+
+# ── Generated / vendored code ──────────────────────────────────────────────────
+dist/                           linguist-vendored
+java/out/                       linguist-vendored
+backend/.venv/                  linguist-vendored
+frontend/node_modules/          linguist-vendored
+Mobileapp/node_modules/         linguist-vendored
+
+# Documentation
+**/*.md                         linguist-documentation

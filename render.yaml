@@ -1,0 +1,37 @@
+services:
+  - type: web
+    name: tracelify-api
+    runtime: docker
+    repo: https://github.com/adityashirsatrao007/tracelify-sdk
+    plan: free
+    dockerfilePath: ./backend/Dockerfile
+    healthCheckPath: /health
+    envVars:
+      - key: APP_NAME
+        value: Tracelify
+      - key: APP_ENV
+        value: production
+      - key: DEBUG
+        value: "false"
+      - key: DATABASE_URL
+        sync: false
+      - key: SECRET_KEY
+        generateValue: true
+      - key: FRONTEND_URL
+        value: https://tracelify-frontend.vercel.app
+      - key: BACKEND_URL
+        value: https://tracelify-api.onrender.com
+      - key: REDIS_HOST
+        sync: false
+      - key: REDIS_PORT
+        sync: false
+      - key: REDIS_PASSWORD
+        sync: false
+      - key: SMTP_HOST
+        value: smtp.gmail.com
+      - key: SMTP_PORT
+        value: "587"
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASSWORD
+        sync: false

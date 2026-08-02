@@ -1,0 +1,131 @@
+{
+  "collected_at": "2026-04-04T23:03:38.245684+00:00",
+  "base_url": "http://localhost:8000",
+  "health": {
+    "status": 200,
+    "body": {
+      "status": "ok",
+      "service": "Tracelify",
+      "version": "1.0.0",
+      "db": "connected"
+    }
+  },
+  "auth": {
+    "user_id": "61678cd0-ecc0-4cad-9506-0536b9d9e6fe",
+    "email": "llm_report_47ff61a4@tracelify-report.io",
+    "name": "LLM Report Bot",
+    "id": "61678cd0-ecc0-4cad-9506-0536b9d9e6fe",
+    "picture": null,
+    "is_active": true,
+    "created_at": "2026-04-04T23:03:40.573853Z",
+    "role_in_org": "owner"
+  },
+  "orgs": [
+    {
+      "id": "f2f0433d-def6-410a-beb1-38ed3f6e9a89",
+      "name": "Report Test Organization",
+      "slug": "report-org-360696",
+      "owner_id": "61678cd0-ecc0-4cad-9506-0536b9d9e6fe",
+      "created_at": "2026-04-04T23:03:44.466151Z"
+    }
+  ],
+  "projects": [
+    {
+      "id": "791713e5-32f5-487c-a4fd-57df88f56bf7",
+      "name": "Report Test Project",
+      "slug": "report-proj-6f63a7",
+      "org_id": "f2f0433d-def6-410a-beb1-38ed3f6e9a89",
+      "platform": "python",
+      "created_at": "2026-04-04T23:03:51.343903Z",
+      "dsn": "http://3fd5b5ad43cab21a242b2950bfa7e9d8@localhost:8000/api/791713e5-32f5-487c-a4fd-57df88f56bf7/events",
+      "dsn_key_count": 1
+    }
+  ],
+  "issues": [
+    {
+      "id": "51f2d9e5-ef41-41e5-80a0-87d4ebb73513",
+      "project_id": "791713e5-32f5-487c-a4fd-57df88f56bf7",
+      "title": "ValueError: invalid literal for int()",
+      "fingerprint": "e0178b6eb51dc159a89f6af0b69f7be9",
+      "level": "error",
+      "status": "open",
+      "first_seen": "2026-04-04T23:04:01.128828Z",
+      "last_seen": "2026-04-04T23:04:01.128828Z",
+      "event_count": 1,
+      "user_count": 0
+    },
+    {
+      "id": "cd16075c-c382-4efb-a771-fba80b0ffa4e",
+      "project_id": "791713e5-32f5-487c-a4fd-57df88f56bf7",
+      "title": "ConnectionTimeout: DB connection timed out",
+      "fingerprint": "9bc0b7ba7069350b18d437ed8e73f9da",
+      "level": "warning",
+      "status": "open",
+      "first_seen": "2026-04-04T23:03:59.553194Z",
+      "last_seen": "2026-04-04T23:03:59.553194Z",
+      "event_count": 1,
+      "user_count": 0
+    },
+    {
+      "id": "58264952-ae9a-4db6-9bf1-9fa5db275f2e",
+      "project_id": "791713e5-32f5-487c-a4fd-57df88f56bf7",
+      "title": "KeyError: 'user_id' not found",
+      "fingerprint": "e783c76e594701bd7fa8d7244cf6fbd5",
+      "level": "error",
+      "status": "open",
+      "first_seen": "2026-04-04T23:03:57.769291Z",
+      "last_seen": "2026-04-04T23:03:57.769291Z",
+      "event_count": 1,
+      "user_count": 0
+    },
+    {
+      "id": "acb54e21-878a-4959-985b-b23e1fdffdc7",
+      "project_id": "791713e5-32f5-487c-a4fd-57df88f56bf7",
+      "title": "ZeroDivisionError: division by zero",
+      "fingerprint": "1383924571a0af54718a1fd539b5c61e",
+      "level": "error",
+      "status": "open",
+      "first_seen": "2026-04-04T23:03:55.011116Z",
+      "last_seen": "2026-04-04T23:03:55.011116Z",
+      "event_count": 1,
+      "user_count": 0
+    }
+  ],
+  "events_sample": [
+    {
+      "id": "c2e9a9c3-7d97-4911-babf-386aaab43161",
+      "project_id": "791713e5-32f5-487c-a4fd-57df88f56bf7",
+      "issue_id": "51f2d9e5-ef41-41e5-80a0-87d4ebb73513",
+      "level": "error",
+      "message": "invalid literal for int()",
+      "error_type": "ValueError",
+      "stacktrace": "File \"app/main.py\", line 42, in compute\n    result = do_valueerror()",
+      "release": null,
+      "environment": "production",
+      "platform": "python",
+      "sdk_name": "tracelify.python",
+      "context": {
+        "host": "prod-01",
+        "service": "tracelify-backend"
+      },
+      "tags": {
+        "env": "production",
+        "version": "1.2.0"
+      },
+      "user_info": {},
+      "breadcrumbs": [],
+      "fingerprint": "e0178b6eb51dc159a89f6af0b69f7be9",
+      "received_at": "2026-04-04T23:04:01.128828Z"
+    }
+  ],
+  "errors": [],
+  "summary_counts": {
+    "orgs": 1,
+    "projects": 1,
+    "issues": 4,
+    "events_ingested": 5,
+    "error": 4,
+    "warning": 1,
+    "info": 0
+  }
+}

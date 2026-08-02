@@ -1,0 +1,36 @@
+# Tracelify Backend — Docker Compose
+# Usage:
+#   docker compose up --build          # start everything
+#   docker compose up --build -d       # detached
+#   docker compose down                # stop
+
+version: "3.9"
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: tracelify-backend:latest
+    container_name: tracelify_backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./backend/.env          # loads DATABASE_URL, REDIS_*, SMTP_*, etc.
+    environment:
+      APP_ENV: production
+      WORKERS: "2"
+    healthcheck:
+      test: ["CMD", "python", "-c",
+             "import httpx,sys; r=httpx.get('http://localhost:8000/health',timeout=5); sys.exit(0 if r.status_code==200 else 1)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    networks:
+      - tracelify_net
+
+networks:
+  tracelify_net:
+    driver: bridge

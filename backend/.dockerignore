@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyc
+.venv/
+venv/
+env/
+
+# Env files (never commit secrets)
+.env
+*.env
+
+# Docker
+.dockerignore
+
+# Test / dev scripts
+test_email.py
+test_sdk.py
+latency_check.py
+seed_alert_rule.py
+apply_indexes.py
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db

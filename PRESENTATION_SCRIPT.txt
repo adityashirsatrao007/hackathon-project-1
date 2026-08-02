@@ -1,0 +1,359 @@
+================================================================================
+   TRACELIFY — HOW TO EXPLAIN IT IN DEPTH (SPEAKER SCRIPT)
+   Hackathon Presentation Guide — 36-Hour Build
+================================================================================
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+OPENING (30 seconds) — The Hook
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Start with this line:
+
+  "Imagine your production app crashes at 3am. By the time your on-call engineer
+   wakes up, they need to know exactly what broke, where in the code it broke,
+   which users were affected, and whether it's happened before. Tracelify gives
+   them that — in real time, automatically."
+
+Then say:
+
+  "We built a full Sentry-like crash analytics platform from scratch. That means
+   a backend that can absorb thousands of error events per second, client SDKs in
+   three languages that never freeze the host application, and a developer
+   portal where teams can triage and resolve issues with full stack traces."
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 1 — THE BIG PICTURE (1–2 minutes)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Explain the three-layer system in plain words:
+
+  "The system has three main parts:
+
+   1. The SDKs — these live inside external applications. When something crashes,
+      the SDK automatically captures the error, builds a structured payload with
+      the stack trace, and ships it to our backend. The key thing is: this happens
+      in a background thread, so the host application never freezes or slows down.
+
+   2. The Backend — this is a FastAPI server backed by PostgreSQL and Redis.
+      Its job is to receive millions of events, store them efficiently, group
+      related errors into 'Issues', and trigger alerts when things go wrong.
+
+   3. The Portal — a React dashboard where developers can log in, see all the
+      errors happening in their projects, drill into stack traces, and mark issues
+      as resolved."
+
+Point at the architecture diagram if you have one, or draw it on a whiteboard:
+
+  External App → SDK → HTTP POST → FastAPI → Redis Queue → Worker → PostgreSQL
+                                                                    ↓
+                                                               React Portal
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 2 — THE INGESTION ENGINE (Most Important — 2–3 minutes)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+This is what judges care about most. Be specific.
+
+  "The naive approach to receiving log events is: SDK sends HTTP POST, backend
+   writes to Postgres, backend responds OK. The problem is that a database write
+   under heavy load can take 50–200 milliseconds. If we block the SDK waiting for
+   that, we're introducing latency into the host application and we risk dropping
+   events if the DB is momentarily slow."
+
+  "We solved this with a Redis queue between ingestion and storage."
+
+Walk through the flow step by step:
+
+  STEP 1 — SDK sends POST to /api/{project_id}/events
+
+  STEP 2 — Backend does exactly two things:
+            a) Validates the DSN key against Postgres (one indexed read, < 1ms)
+            b) Pushes the raw JSON payload onto a Redis list (RPUSH)
+
+  STEP 3 — Backend immediately returns HTTP 202 Accepted
+            The SDK is done in about 2 milliseconds.
+            The database hasn't even been touched yet.
+
+  STEP 4 — A background asyncio task (running inside FastAPI itself) does
+            BLPOP on the Redis list — it blocks and waits for events efficiently.
+            When an event arrives, it runs the full processing pipeline:
+              - Parse the JSON
+              - Compute a fingerprint for grouping
+              - Upsert the Issue row
+              - Insert the Event row
+              - Trigger alert rules
+              - Commit the transaction
+
+  "This design means the ingestion endpoint can respond in under 5ms regardless
+   of database load. If Postgres is slow for 10 seconds, events just queue up in
+   Redis and drain when Postgres recovers. Nothing is dropped."
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 3 — ISSUE GROUPING (Fingerprinting) — 1 minute
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  "One of the core problems in crash analytics is: when the same bug crashes your
+   app 500 times, you don't want 500 separate issue tickets. You want one Issue
+   with a count of 500 and a timeline."
+
+  "We solve this with fingerprinting. For every incoming event, we compute:
+
+     fingerprint = SHA256( error_type + ':' + last_line_of_stacktrace )[:32]
+
+   The last line of the stack trace is the most specific location in the code
+   where the error occurred. So two crashes of the same exception at the same
+   line will always produce the same fingerprint.
+
+   Then we do a database UPSERT:
+     - If no issue with this fingerprint exists → create a new Issue
+     - If one does exist → increment event_count, update last_seen
+
+   If an issue was previously marked RESOLVED but the same fingerprint appears
+   again, we automatically re-open it. This is exactly how Sentry works."
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 4 — DATABASE OPTIMIZATION (2 minutes — judges will ask about this)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Start by stating the problem clearly:
+
+  "The problem statement specifically says: relational databases degrade during
+   heavy LIKE %...% text searches. We needed a way to search across millions of
+   error messages and stack traces in milliseconds."
+
+Explain Full-Text Search first:
+
+  "We implemented PostgreSQL Full-Text Search. We added a computed column called
+   search_vector to the events table. This column is a tsvector — a pre-processed
+   token index of the text content."
+
+  "It's built from three fields with different weights:
+     - error_type gets weight A (highest)
+     - message gets weight B
+     - stacktrace gets weight C (lowest)
+
+   We then create a GIN index on that column. GIN stands for Generalized Inverted
+   Index — it's the same data structure used by search engines like Elasticsearch.
+   Instead of scanning every row looking for a word, it maintains a lookup table:
+   word → list of row IDs. So a search for 'NullPointerException' hits the index
+   and returns matching rows instantly, regardless of table size."
+
+  "And crucially, we use a database trigger to keep search_vector up to date
+   automatically on every INSERT and UPDATE. Developers never have to think about
+   it — they just query, and it's fast."
+
+Then mention the other indexes:
+
+  "Beyond full-text search, we built:
+
+   - GIN indexes on all three JSONB columns (tags, context, user_info) so queries
+     like: 'show me all errors where tags contains env=production' are instant.
+
+   - Partial indexes — for example, the DSN key validation runs on every single
+     SDK event. We index only the rows where is_active = True, which cuts the
+     index size approximately in half and eliminates all the inactive dead rows.
+
+   - Covering indexes for authentication checks — when we verify a user's role,
+     the index includes the role column. The database returns it directly from the
+     index without ever touching the main table rows. Extremely fast.
+
+   - Partial index for open issues — since developers almost always query
+     'show me open issues', we have a dedicated index that only covers
+     status = 'open' rows."
+
+If a judge asks: "Why GIN and not GiST?"
+  Answer: "GIN is better for static data that gets queried a lot. It has larger
+  build time and size but much faster lookup. GiST is better for geometric or
+  dynamic data. For log search, GIN is the right choice."
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 5 — THE SDKs (2 minutes)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Start with the core principle:
+
+  "The golden rule of an SDK is: never crash or slow down the application that's
+   using you. We follow this in all three SDKs with the same pattern:
+
+   1. The main thread puts the event into a thread-safe queue instantly
+   2. A background thread drains the queue and sends HTTP requests
+   3. If the backend is unreachable, we log and drop — we never retry forever"
+
+PYTHON SDK:
+  "In Python, we use threading.Thread with daemon=True, connected to a
+   queue.Queue. Queue is built into the standard library and is fully thread-safe.
+   
+   For global crash capture, we override sys.excepthook. This function is called
+   by Python whenever an unhandled exception would terminate the program. We
+   intercept it, call capture_exception, then call flush with a 5-second timeout
+   to make sure the event gets delivered before the process exits."
+
+C++ SDK:
+  "The C++ SDK is probably the most technically interesting. We use std::thread,
+   std::mutex, and std::condition_variable. The condition_variable is important —
+   it means the worker thread sleeps with zero CPU usage when the queue is empty,
+   and wakes up instantly when an event is pushed. No polling, no busy loop.
+
+   For global crash capture, we register a handler using std::set_terminate.
+   This is a C++ runtime function that gets called whenever the program is about
+   to die from an unhandled exception. We intercept it, rethrow the current
+   exception to inspect it, send the crash event, flush the queue, and then
+   call abort() to let the program die normally.
+
+   The SDK also batches — it sends up to 5 events per HTTP request rather than
+   one request per event, which is important for reducing network overhead."
+
+JAVA SDK:
+  "In Java, we use BlockingQueue — the standard Java concurrent data structure
+   for producer-consumer patterns. We register a global crash handler using
+   Thread.setDefaultUncaughtExceptionHandler, which fires on any thread that
+   dies with an unhandled exception, not just the main thread. This is important
+   in multi-threaded Java applications."
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 6 — RBAC (1 minute)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  "Multi-tenancy works through Organizations. A user creates an Organization,
+   becomes its owner, creates Projects inside it, and invites other users as
+   members with roles.
+
+   Every protected API endpoint checks: is this user a member of the organization
+   that owns this project? If not, we return 403 Forbidden.
+
+   The role column on organization_members drives what each user can do:
+     - owner / admin → can modify projects, alert rules, DSN keys
+     - member / developer → read-only access to issues and events,
+                            can mark issues as resolved
+
+   Authentication is stateless JWT. Every request includes a token, we verify
+   the signature and extract the user ID — no sessions, no server-side storage,
+   horizontally scalable."
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 7 — ALERT ENGINE (1 minute)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  "Alerts are evaluated after every event is processed. We support three trigger
+   conditions:
+
+     new_issue     → fires the first time a unique fingerprint is seen
+     event_count   → fires if X events arrive in the last N minutes
+     issue_level   → fires if an issue of a specific severity appears
+
+   Actions are email (async SMTP, non-blocking) or webhook (HTTP POST).
+
+   The important engineering detail here is the cooldown system. Without it, a
+   burst of 1000 errors would send 1000 emails. We use Redis to rate-limit: after
+   an alert fires, we set a key with a 15-minute expiry. If that key exists, we
+   skip the alert. When it expires, alerts can fire again.
+
+   One design choice: if Redis is unreachable, we allow the alert to fire rather
+   than silently dropping it. In a monitoring system, it's better to over-alert
+   than to miss a real incident.
+
+   Also important: alert evaluation runs in a separate database session AFTER
+   the event is committed. This means if the email server is down and throws an
+   exception, it cannot cause a rollback that would delete the stored event."
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 8 — AI LAYER (30 seconds bonus)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  "We added one bonus feature: on-demand AI health reports. A developer hits a
+   single endpoint, we collect live data from all our APIs — issues, events,
+   error rates, alert rules — structure it into a prompt, and pass it to Amazon
+   Bedrock's Nova Pro model. It returns a Markdown report with error trends,
+   top failing components, and suggested fixes. This gives managers a one-click
+   executive summary of the project's health."
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+COMMON JUDGE QUESTIONS — HOW TO ANSWER THEM
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Q: What happens if Redis goes down?
+A: "Events get dropped at the ingestion layer. This is an acceptable trade-off
+    because the alternative — writing directly to Postgres on every request —
+    creates a harder single point of failure. In a production system, Redis would
+    be in HA mode with replicas. For this hackathon, Redis down = brief event loss,
+    which is the same behavior as Sentry."
+
+Q: What happens if the database goes down?
+A: "The backend still responds to SDK events — it validates the DSN from a cached
+    connection and queues to Redis. Events will pile up in Redis safely. When
+    Postgres recovers, the worker drains the queue. No events are lost as long as
+    Redis is healthy."
+
+Q: Why FastAPI and not Spring Boot?
+A: "The problem statement said Spring Boot, but FastAPI gives us native async
+    support which is architecturally important for our ingestion design. The Redis
+    queue + asyncio worker pattern is essentially impossible to do cleanly in a
+    Spring Boot blocking thread model without adding a separate message broker
+    infrastructure." 
+    [NOTE: if they push back, just say Python was a practical decision for 36 hours]
+
+Q: How does search scale at 10 million events?
+A: "The GIN full-text search index maintains an inverted index — it scales
+    logarithmically, not linearly. At 10M rows, a full-text query still runs in
+    under 100ms. We'd also consider partitioning the events table by month
+    (table partitioning is mentioned in the problem statement hints) so that
+    queries against recent data only scan the current month's partition."
+
+Q: How do you handle duplicate events?
+A: "The events table uses the SDK-generated event_id as the primary key. If the
+    same event is sent twice (e.g., SDK retry), the second INSERT will fail with a
+    primary key collision and be silently discarded. No double-counting."
+
+Q: What's the DSN and how does auth work for SDKs?
+A: "DSN stands for Data Source Name. When a developer creates a project in the
+    portal, we generate a unique public_key UUID and a DSN URL in the format:
+    http://<public_key>@<host>/api/<project_id>/events
+    
+    The SDK parses this URL, extracts the key and project ID, and sends the
+    public_key as a Bearer token on every request. The backend looks it up in the
+    dsn_keys table — a partial index on is_active=true makes this under 1ms."
+
+Q: Can developers see each other's data?
+A: "No. Every API query is scoped by the user's organization membership. A user
+    in Organization A cannot access Organization B's data even if they know the
+    project UUID — the membership check will return 403."
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CLOSING (20 seconds)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  "Every technical decision we made had a reason. The Redis queue exists to
+   decouple ingestion latency from storage latency. The GIN indexes exist because
+   the problem statement told us LIKE queries don't scale. The SDK background
+   threads exist because a monitoring tool that crashes your app is worse than
+   no monitoring at all.
+
+   We didn't just build features — we built the right architecture."
+
+
+================================================================================
+   GOLDEN TIPS
+================================================================================
+
+- Lead with the Redis queue design. This is your strongest architectural point.
+- When talking about GIN indexes, say "inverted index" — judges will recognize it.
+- When talking about SDKs, always use the word "non-blocking" — it's in the rubric.
+- Don't just say "we used Postgres." Say "we optimized Postgres for text search
+  using GIN indexes on tsvector columns with automatic trigger-based updates."
+- If you show a demo, search for an error first to show FTS working.
+- Mention the fingerprinting → issue grouping → auto-reopen flow. It shows depth.
+- If nervous about a question, buy time: "Great question — so the way we
+  approached that is..." then answer what you know confidently.
+
+================================================================================

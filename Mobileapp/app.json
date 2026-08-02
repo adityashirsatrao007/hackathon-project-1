@@ -1,0 +1,51 @@
+{
+  "expo": {
+    "name": "Tracelify",
+    "slug": "tracelify-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "newArchEnabled": true,
+    "scheme": "tracelify",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#09090f"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.tracelify.mobile"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#09090f"
+      },
+      "edgeToEdgeEnabled": true,
+      "package": "com.tracelify.mobile",
+      "usesCleartextTraffic": true
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-secure-store",
+      "expo-web-browser",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "usesCleartextTraffic": true
+          }
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "b8683ced-eee4-4942-b8f1-c72735057958"
+      }
+    },
+    "owner": "razashaikh21"
+  }
+}
