@@ -2,7 +2,7 @@ services:
   - type: web
     name: tracelify-api
     runtime: docker
-    repo: https://github.com/adityashirsatrao007/tracelify-sdk
+    repo: https://github.com/adityashirsatrao007/error-tracking-observability-sdk
     plan: free
     dockerfilePath: ./backend/Dockerfile
     healthCheckPath: /health
