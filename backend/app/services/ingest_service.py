@@ -8,15 +8,16 @@ import json
 import uuid
 from types import SimpleNamespace
 from typing import Any
-from fastapi import HTTPException, status
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
 
-from app.models.project import DsnKey
-from app.models.event import Event
-from app.schemas.event import IngestEventRequest
-from app.core.redis import push_to_queue
+from fastapi import HTTPException, status
 from loguru import logger
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.core.redis import push_to_queue
+from app.models.event import Event
+from app.models.project import DsnKey
+from app.schemas.event import IngestEventRequest
 
 
 async def validate_dsn(
@@ -33,7 +34,7 @@ async def validate_dsn(
     result = await db.execute(
         select(DsnKey).where(
             DsnKey.public_key == public_key,
-            DsnKey.is_active == True,  # noqa: E712
+            DsnKey.is_active,
         )
     )
     key = result.scalar_one_or_none()

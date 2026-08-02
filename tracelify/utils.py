@@ -2,6 +2,7 @@ import platform
 import uuid
 from datetime import datetime, timezone
 
+
 def get_runtime_context():
     return {
         "os": platform.system(),

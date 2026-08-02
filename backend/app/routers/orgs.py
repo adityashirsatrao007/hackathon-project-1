@@ -7,17 +7,24 @@ Organization routes:
   GET  /orgs/{org_id}/members        — list members (with user name + email)
   GET  /orgs/{org_id}/my-role        — get current user's role in this org
 """
-import uuid
 import re
+import uuid
+
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.core.deps import CurrentUser
 from app.models.org import Organization, OrganizationMember
 from app.models.user import User
-from app.schemas.org import CreateOrgRequest, OrgOut, MemberOut, AddMemberRequest, MyRoleOut
+from app.schemas.org import (
+    AddMemberRequest,
+    CreateOrgRequest,
+    MemberOut,
+    MyRoleOut,
+    OrgOut,
+)
 
 router = APIRouter(prefix="/orgs", tags=["Organizations"])
 

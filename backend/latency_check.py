@@ -8,8 +8,9 @@ No auth token needed — script signs up/logs in automatically.
 """
 import asyncio
 import time
-import httpx
 import uuid
+
+import httpx
 
 BASE = "http://localhost:8000"
 RESULTS = []

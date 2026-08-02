@@ -1,9 +1,12 @@
+from __future__ import annotations
+
 import uuid
-from sqlalchemy import String, Boolean, Text
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from sqlalchemy import Boolean, String, Text, func
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy import func
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.types import DateTime
+
 from app.core.database import Base
 
 
@@ -24,10 +27,10 @@ class User(Base):
     )
 
     # Relationships
-    owned_orgs: Mapped[list["Organization"]] = relationship(  # noqa: F821
+    owned_orgs: Mapped[list[Organization]] = relationship(  # noqa: F821
         "Organization", back_populates="owner", lazy="select"
     )
-    org_memberships: Mapped[list["OrganizationMember"]] = relationship(  # noqa: F821
+    org_memberships: Mapped[list[OrganizationMember]] = relationship(  # noqa: F821
         "OrganizationMember", back_populates="user", lazy="select"
     )
 

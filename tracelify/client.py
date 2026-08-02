@@ -1,11 +1,12 @@
-from .config import Config
-from .hub import set_client
-from .scope import Scope
-from .queue import event_queue
-from .worker import start_worker, _flush
-from .handlers import setup_global_handler
-from .utils import get_runtime_context, get_timestamp, generate_event_id
 import traceback
+
+from .config import Config
+from .handlers import setup_global_handler
+from .hub import set_client
+from .queue import event_queue
+from .scope import Scope
+from .utils import generate_event_id, get_runtime_context, get_timestamp
+from .worker import _flush, start_worker
 
 
 class Tracelify:

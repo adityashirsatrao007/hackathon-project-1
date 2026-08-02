@@ -7,13 +7,14 @@
 Run with:
     python test_apis.py
 """
+from __future__ import annotations
 
 import asyncio
 import json
 import sys
 import uuid
 from datetime import datetime
-from typing import Optional
+
 import httpx
 
 # ── Config ────────────────────────────────────────────────────────────────────
@@ -83,13 +84,15 @@ async def _req(
     path: str,
     *,
     label: str,
-    token: Optional[str] = None,
+    token: str | None = None,
     json_body=None,
-    headers: dict = {},
+    headers: dict | None = None,
     expected: int = 200,
     note: str = "",
-) -> Optional[dict]:
+) -> dict | None:
     """Send a request, log result, return parsed JSON or None on failure."""
+    if headers is None:
+        headers = {}
     url = f"{BASE_URL}{path}"
     hdrs = dict(headers)
     if token:

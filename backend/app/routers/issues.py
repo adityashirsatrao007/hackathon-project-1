@@ -5,19 +5,22 @@ Issue routes:
   PATCH /projects/{project_id}/issues/{issue_id} — update status
   GET   /projects/{project_id}/issues/{issue_id}/events — events in this issue
 """
+from __future__ import annotations
+
 import uuid
+
 from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func
 
 from app.core.database import get_db
 from app.core.deps import CurrentUser
+from app.models.event import Event
+from app.models.issue import Issue
 from app.models.org import OrganizationMember
 from app.models.project import Project
-from app.models.issue import Issue
-from app.models.event import Event
-from app.schemas.issue import IssueOut, IssueUpdateRequest, IssueListResponse
 from app.schemas.event import EventOut
+from app.schemas.issue import IssueListResponse, IssueOut, IssueUpdateRequest
 
 router = APIRouter(tags=["Issues"])
 

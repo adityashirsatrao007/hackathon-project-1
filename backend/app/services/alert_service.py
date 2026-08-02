@@ -4,19 +4,20 @@ Alert service:
  - Currently supports: event_count threshold and new_issue triggers
  - Actions: email (via SMTP) and webhook (HTTP POST)
 """
-import httpx
 import ipaddress
 import uuid
+from datetime import datetime, timedelta, timezone
 from urllib.parse import urlparse
-from datetime import datetime, timezone, timedelta
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func
 
-from app.models.event import AlertRule, Event
-from app.models.issue import Issue
+import httpx
+from loguru import logger
+from sqlalchemy import func, select
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.core.config import settings
 from app.core.redis import get_redis_pool
-from loguru import logger
+from app.models.event import AlertRule, Event
+from app.models.issue import Issue
 
 
 async def evaluate_alerts(
@@ -29,7 +30,7 @@ async def evaluate_alerts(
     result = await db.execute(
         select(AlertRule).where(
             AlertRule.project_id == project_id,
-            AlertRule.is_active == True,  # noqa: E712
+            AlertRule.is_active,
         )
     )
     rules = result.scalars().all()
@@ -142,9 +143,10 @@ async def _send_email_alert(action: dict, rule: AlertRule, issue: Issue) -> None
         return
 
     try:
-        import aiosmtplib
-        from email.mime.text import MIMEText
         from email.mime.multipart import MIMEMultipart
+        from email.mime.text import MIMEText
+
+        import aiosmtplib
 
         recipients = action.get("recipients", [])
         if not recipients:
@@ -212,7 +214,6 @@ def _validate_webhook_url(url: str) -> None:
         if "private/reserved" in str(e):
             raise
         # Not an IP address — hostname, continue
-        pass
 
     # Block hostnames likely to resolve to localhost
     blocked_hosts = {"localhost", "127.0.0.1", "0.0.0.0", "[::1]", "host.docker.internal"}

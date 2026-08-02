@@ -1,10 +1,12 @@
 from __future__ import annotations
+
 import uuid
-from sqlalchemy import String, ForeignKey, Text, Boolean
+
+from sqlalchemy import Boolean, ForeignKey, String, Text, func
+from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy.dialects.postgresql import UUID, JSONB
-from sqlalchemy import func
 from sqlalchemy.types import DateTime
+
 from app.core.database import Base
 
 
@@ -44,10 +46,10 @@ class Event(Base):
     )
 
     # Relationships
-    project: Mapped["Project"] = relationship(    # noqa: F821
+    project: Mapped[Project] = relationship(    # noqa: F821
         "Project", back_populates="events", lazy="select"
     )
-    issue: Mapped["Issue | None"] = relationship(  # noqa: F821
+    issue: Mapped[Issue | None] = relationship(  # noqa: F821
         "Issue", back_populates="events", lazy="select"
     )
 
@@ -82,7 +84,7 @@ class AlertRule(Base):
     )
 
     # Relationship
-    project: Mapped["Project"] = relationship(    # noqa: F821
+    project: Mapped[Project] = relationship(    # noqa: F821
         "Project", back_populates="alert_rules", lazy="select"
     )
 

@@ -1,11 +1,12 @@
+from __future__ import annotations
+
 import uuid
 from datetime import datetime, timedelta, timezone
-from typing import Any, Optional
+from typing import Any
 
-from jose import JWTError, jwt
 import bcrypt
-
 from app.core.config import settings
+from jose import JWTError, jwt
 
 
 def hash_password(plain: str) -> str:
@@ -22,8 +23,8 @@ def verify_password(plain: str, hashed: str) -> bool:
 # ── JWT ───────────────────────────────────────────────────────────────────────
 def create_access_token(
     subject: str,
-    extra: Optional[dict[str, Any]] = None,
-    expires_delta: Optional[timedelta] = None,
+    extra: dict[str, Any] | None = None,
+    expires_delta: timedelta | None = None,
 ) -> str:
     """
     Create a signed JWT.
@@ -46,7 +47,7 @@ def create_access_token(
     return jwt.encode(payload, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
 
 
-def decode_access_token(token: str) -> Optional[dict[str, Any]]:
+def decode_access_token(token: str) -> dict[str, Any] | None:
     """
     Decode a JWT and return its payload.
     Returns None if the token is invalid or expired.

@@ -10,8 +10,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
 from app.core.deps import CurrentUser
 from app.schemas.auth import (
-    SignupRequest,
     LoginRequest,
+    SignupRequest,
     TokenResponse,
     UserOut,
 )

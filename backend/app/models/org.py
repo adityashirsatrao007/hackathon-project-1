@@ -1,9 +1,12 @@
+from __future__ import annotations
+
 import uuid
-from sqlalchemy import String, ForeignKey
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from sqlalchemy import ForeignKey, String, func
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy import func
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.types import DateTime
+
 from app.core.database import Base
 
 
@@ -23,13 +26,13 @@ class Organization(Base):
     )
 
     # Relationships
-    owner: Mapped["User"] = relationship(  # noqa: F821
+    owner: Mapped[User] = relationship(  # noqa: F821
         "User", back_populates="owned_orgs", lazy="select"
     )
-    members: Mapped[list["OrganizationMember"]] = relationship(
+    members: Mapped[list[OrganizationMember]] = relationship(
         "OrganizationMember", back_populates="org", lazy="select"
     )
-    projects: Mapped[list["Project"]] = relationship(  # noqa: F821
+    projects: Mapped[list[Project]] = relationship(  # noqa: F821
         "Project", back_populates="org", lazy="select"
     )
 
@@ -59,10 +62,10 @@ class OrganizationMember(Base):
     )
 
     # Relationships
-    org: Mapped["Organization"] = relationship(
+    org: Mapped[Organization] = relationship(
         "Organization", back_populates="members", lazy="select"
     )
-    user: Mapped["User"] = relationship(  # noqa: F821
+    user: Mapped[User] = relationship(  # noqa: F821
         "User", back_populates="org_memberships", lazy="select"
     )
 

@@ -7,18 +7,19 @@ Project routes:
   POST /projects/{project_id}/dsn          — rotate / add new DSN key
 """
 import uuid
+
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.core.deps import CurrentUser
 from app.models.org import Organization, OrganizationMember
-from app.models.project import Project, DsnKey
+from app.models.project import DsnKey, Project
 from app.schemas.project import (
     CreateProjectRequest,
-    ProjectOut,
     DsnKeyOut,
+    ProjectOut,
     ProjectWithDsn,
 )
 

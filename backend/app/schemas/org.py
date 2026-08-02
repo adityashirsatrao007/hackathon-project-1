@@ -1,8 +1,9 @@
-from pydantic import BaseModel
-from typing import Optional
+from __future__ import annotations
+
 import uuid
 from datetime import datetime
 
+from pydantic import BaseModel
 
 # ── Request ───────────────────────────────────────────────────────────────────
 
@@ -37,8 +38,8 @@ class MemberOut(BaseModel):
     role: str
     joined_at: datetime
     # Enriched from User table — may be None for legacy rows
-    user_name: Optional[str] = None
-    user_email: Optional[str] = None
+    user_name: str | None = None
+    user_email: str | None = None
 
 
 class MyRoleOut(BaseModel):

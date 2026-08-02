@@ -8,20 +8,20 @@ Event Processor:
   5. Links event.issue_id
   6. Evaluates alert rules
 """
-import uuid
 import hashlib
 import json
+import uuid
 from datetime import datetime, timezone
 
-from sqlalchemy.ext.asyncio import AsyncSession
+from loguru import logger
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import AsyncSessionLocal
 from app.models.event import Event
 from app.models.issue import Issue
 from app.models.project import Project
 from app.services.alert_service import evaluate_alerts
-from loguru import logger
 
 
 def _compute_fingerprint(payload: dict) -> str:

@@ -8,13 +8,14 @@ project health reports from live database data for a SPECIFIC project.
 import json
 import os
 from datetime import datetime, timezone
-import boto3
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func
-from dotenv import load_dotenv
 
-from app.models.project import Project
+import boto3
+from dotenv import load_dotenv
+from sqlalchemy import func, select
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.models.issue import Issue
+from app.models.project import Project
 
 load_dotenv()
 

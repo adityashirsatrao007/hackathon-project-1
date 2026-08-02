@@ -99,7 +99,7 @@ def test_basic_exceptions(sdk: Tracelify) -> None:
 
     # 1b  NameError
     try:
-        undefined_variable  # noqa: F821
+        undefined_variable
     except NameError as e:
         log("NameError  (undefined_variable)", capture(sdk, e))
 
@@ -194,7 +194,7 @@ def test_nested_exceptions(sdk: Tracelify) -> None:
 
     # 2b  Deep call stack  (3 levels)
     def _level3():
-        raise IOError("Disk quota exceeded at level 3")
+        raise OSError("Disk quota exceeded at level 3")
     def _level2():
         _level3()
     def _level1():
@@ -202,7 +202,7 @@ def test_nested_exceptions(sdk: Tracelify) -> None:
 
     try:
         _level1()
-    except IOError as e:
+    except OSError as e:
         log("IOError from 3-level deep call stack", capture(sdk, e))
 
     # 2c  ValueError inside a list comprehension

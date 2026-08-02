@@ -1,3 +1,3 @@
-from app.services import auth_service, ingest_service, alert_service
+from app.services import alert_service, auth_service, ingest_service
 
-__all__ = ["auth_service", "ingest_service", "alert_service"]
+__all__ = ["alert_service", "auth_service", "ingest_service"]

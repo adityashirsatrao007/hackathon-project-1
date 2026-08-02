@@ -1,10 +1,13 @@
-import uuid
+from __future__ import annotations
+
 import secrets
-from sqlalchemy import String, ForeignKey, Boolean, UniqueConstraint
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+import uuid
+
+from sqlalchemy import Boolean, ForeignKey, String, UniqueConstraint, func
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy import func
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.types import DateTime
+
 from app.core.database import Base
 
 
@@ -28,19 +31,19 @@ class Project(Base):
     )
 
     # Relationships
-    org: Mapped["Organization"] = relationship(  # noqa: F821
+    org: Mapped[Organization] = relationship(  # noqa: F821
         "Organization", back_populates="projects", lazy="select"
     )
-    dsn_keys: Mapped[list["DsnKey"]] = relationship(
+    dsn_keys: Mapped[list[DsnKey]] = relationship(
         "DsnKey", back_populates="project", lazy="select"
     )
-    events: Mapped[list["Event"]] = relationship(  # noqa: F821
+    events: Mapped[list[Event]] = relationship(  # noqa: F821
         "Event", back_populates="project", lazy="select"
     )
-    issues: Mapped[list["Issue"]] = relationship(  # noqa: F821
+    issues: Mapped[list[Issue]] = relationship(  # noqa: F821
         "Issue", back_populates="project", lazy="select"
     )
-    alert_rules: Mapped[list["AlertRule"]] = relationship(  # noqa: F821
+    alert_rules: Mapped[list[AlertRule]] = relationship(  # noqa: F821
         "AlertRule", back_populates="project", lazy="select"
     )
 
@@ -72,7 +75,7 @@ class DsnKey(Base):
     )
 
     # Relationship
-    project: Mapped["Project"] = relationship(
+    project: Mapped[Project] = relationship(
         "Project", back_populates="dsn_keys", lazy="select"
     )
 

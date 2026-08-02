@@ -8,17 +8,18 @@ Optimisations applied:
     calls within the 60-second TTL return immediately from memory.
   - Cache is invalidated automatically when the JWT rotates (new iat).
 """
-import time
-from typing import Annotated, Optional
+from __future__ import annotations
 
-from fastapi import Depends, HTTPException, status
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+import time
+from typing import Annotated
 
 from app.core.database import get_db
 from app.core.security import decode_access_token
 from app.models.user import User
+from fastapi import Depends, HTTPException, status
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 bearer_scheme = HTTPBearer(auto_error=False)
 
@@ -28,7 +29,7 @@ _user_cache: dict[tuple, tuple] = {}
 _USER_CACHE_TTL = 60  # seconds — safe for a single-process dev server
 
 
-def _cache_get(key: tuple) -> Optional[dict]:
+def _cache_get(key: tuple) -> dict | None:
     entry = _user_cache.get(key)
     if entry and (time.monotonic() - entry[1]) < _USER_CACHE_TTL:
         return entry[0]

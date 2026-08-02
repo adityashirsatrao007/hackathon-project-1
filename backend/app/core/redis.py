@@ -1,14 +1,15 @@
+from __future__ import annotations
+
 import redis.asyncio as aioredis
-from redis.exceptions import TimeoutError as RedisTimeoutError
 from app.core.config import settings
 from loguru import logger
-from typing import Optional
+from redis.exceptions import TimeoutError as RedisTimeoutError
 
-_redis_pool: Optional[aioredis.Redis] = None
+_redis_pool: aioredis.Redis | None = None
 _redis_disabled: bool = False
 
 
-async def get_redis_pool() -> Optional[aioredis.Redis]:
+async def get_redis_pool() -> aioredis.Redis | None:
     """Return (or create) the shared Redis connection pool.
 
     Returns None when Redis is unavailable (graceful degradation).
@@ -65,7 +66,7 @@ async def push_to_queue(data: str) -> None:
     await pool.rpush(settings.REDIS_QUEUE_KEY, data)
 
 
-async def pop_from_queue(timeout: int = 5) -> Optional[str]:
+async def pop_from_queue(timeout: int = 5) -> str | None:
     """
     Block-pop from the Redis event queue (BLPOP).
     Returns the raw JSON string or None on timeout.

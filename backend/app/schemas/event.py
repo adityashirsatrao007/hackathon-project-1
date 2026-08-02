@@ -1,19 +1,21 @@
-from pydantic import BaseModel
-from typing import Any, Optional
+from __future__ import annotations
+
 import uuid
 from datetime import datetime
+from typing import Any
 
+from pydantic import BaseModel
 
 # ── Ingest (from SDK) ─────────────────────────────────────────────────────────
 
 class ErrorInfo(BaseModel):
     type: str
     message: str
-    stacktrace: Optional[str] = None
+    stacktrace: str | None = None
 
 
 class ClientInfo(BaseModel):
-    sdk: Optional[str] = "tracelify.python"
+    sdk: str | None = "tracelify.python"
 
 
 class IngestEventRequest(BaseModel):
@@ -22,14 +24,14 @@ class IngestEventRequest(BaseModel):
     project_id: str
     timestamp: str
     level: str = "error"
-    release: Optional[str] = None
-    fingerprint: Optional[str] = None
-    client: Optional[ClientInfo] = None
-    error: Optional[ErrorInfo] = None
-    context: Optional[dict[str, Any]] = None
-    tags: Optional[dict[str, Any]] = None
-    user: Optional[dict[str, Any]] = None
-    breadcrumbs: Optional[list[Any]] = None
+    release: str | None = None
+    fingerprint: str | None = None
+    client: ClientInfo | None = None
+    error: ErrorInfo | None = None
+    context: dict[str, Any] | None = None
+    tags: dict[str, Any] | None = None
+    user: dict[str, Any] | None = None
+    breadcrumbs: list[Any] | None = None
 
 
 class IngestResponse(BaseModel):
@@ -44,12 +46,12 @@ class EventOut(BaseModel):
 
     id: uuid.UUID
     project_id: uuid.UUID
-    issue_id: Optional[uuid.UUID]
+    issue_id: uuid.UUID | None
     level: str
-    message: Optional[str]
-    error_type: Optional[str]
-    stacktrace: Optional[str]
-    release: Optional[str]
+    message: str | None
+    error_type: str | None
+    stacktrace: str | None
+    release: str | None
     environment: str
     platform: str
     sdk_name: str
@@ -57,5 +59,5 @@ class EventOut(BaseModel):
     tags: dict
     user_info: dict
     breadcrumbs: list
-    fingerprint: Optional[str]
+    fingerprint: str | None
     received_at: datetime

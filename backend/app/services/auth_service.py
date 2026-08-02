@@ -1,14 +1,13 @@
 """
 Email/password auth service.
 """
-from sqlalchemy.ext.asyncio import AsyncSession
+from loguru import logger
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.security import create_access_token, hash_password, verify_password
 from app.models.user import User
-from app.schemas.auth import SignupRequest, LoginRequest
-from loguru import logger
-
+from app.schemas.auth import LoginRequest, SignupRequest
 
 # ── Email / Password Auth ─────────────────────────────────────────────────────
 

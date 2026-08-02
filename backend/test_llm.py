@@ -12,17 +12,19 @@ Run with:
     python test_llm.py
     python test_llm.py --full   # also hits the live API
 """
+from __future__ import annotations
 
-import sys
-import os
-import json
-import asyncio
 import argparse
+import asyncio
+import json
+import os
+import sys
 import time
 from datetime import datetime, timezone
 
 # ── Load .env before any imports from the app ─────────────────────────────────
 from dotenv import load_dotenv
+
 load_dotenv()
 
 # ── Colour helpers ────────────────────────────────────────────────────────────
@@ -302,7 +304,12 @@ async def test_full_api_report():
     _tick("Backend reachable at localhost:8000", True)
 
     try:
-        from app.llm.sumarisellm import collect_api_data, build_report_prompt, call_llm, save_report
+        from app.llm.sumarisellm import (
+            build_report_prompt,
+            call_llm,
+            collect_api_data,
+            save_report,
+        )
     except ImportError as e:
         _tick("Import pipeline functions", False, str(e))
         return

@@ -1,5 +1,6 @@
 import atexit
 import threading
+
 from .queue import event_queue
 from .transport import send_event
 

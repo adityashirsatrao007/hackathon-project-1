@@ -8,13 +8,14 @@ import asyncio
 import os
 import uuid
 from datetime import datetime, timezone
+
 from fastapi import APIRouter, Depends, HTTPException, Path
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.deps import CurrentUser
 from app.core.database import get_db
-from app.llm.sumarisellm import collect_project_data, build_report_prompt, call_llm
+from app.core.deps import CurrentUser
+from app.llm.sumarisellm import build_report_prompt, call_llm, collect_project_data
 
 router = APIRouter(prefix="/report", tags=["LLM Report"])
 

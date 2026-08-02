@@ -1,7 +1,9 @@
-from pydantic import BaseModel
-from typing import Optional
+from __future__ import annotations
+
 import uuid
 from datetime import datetime
+
+from pydantic import BaseModel
 
 
 class IssueOut(BaseModel):
@@ -20,7 +22,7 @@ class IssueOut(BaseModel):
 
 
 class IssueUpdateRequest(BaseModel):
-    status: Optional[str] = None    # open | resolved | ignored
+    status: str | None = None    # open | resolved | ignored
 
 
 class IssueListResponse(BaseModel):

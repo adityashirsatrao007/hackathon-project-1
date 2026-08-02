@@ -1,10 +1,12 @@
 from __future__ import annotations
+
 import uuid
-from sqlalchemy import String, ForeignKey, Text, Integer, UniqueConstraint
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from sqlalchemy import ForeignKey, Integer, String, Text, UniqueConstraint, func
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy import func
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.types import DateTime
+
 from app.core.database import Base
 
 
@@ -37,10 +39,10 @@ class Issue(Base):
     user_count: Mapped[int] = mapped_column(Integer, default=0)
 
     # Relationships
-    project: Mapped["Project"] = relationship(       # noqa: F821
+    project: Mapped[Project] = relationship(       # noqa: F821
         "Project", back_populates="issues", lazy="select"
     )
-    events: Mapped[list["Event"]] = relationship(  # noqa: F821
+    events: Mapped[list[Event]] = relationship(  # noqa: F821
         "Event", back_populates="issue", lazy="select"
     )
 

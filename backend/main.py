@@ -1,20 +1,18 @@
 import asyncio
 from contextlib import asynccontextmanager
 
+# Import all models so SQLAlchemy sees them before create_all()
+import app.models
+from app.core.config import settings
+from app.core.database import check_db_connection, init_db
+from app.core.redis import close_redis_pool, get_redis_pool
+from app.routers import alerts, auth, events, issues, orgs, projects, report
+from app.worker.worker import run_worker
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from loguru import logger
 
-from app.core.config import settings
-from app.core.database import init_db, check_db_connection
-from app.core.redis import get_redis_pool, close_redis_pool
-
-# Import all models so SQLAlchemy sees them before create_all()
-import app.models  # noqa: F401
-
-from app.routers import auth, orgs, projects, events, issues, report, alerts
-from app.worker.worker import run_worker
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

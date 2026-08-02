@@ -5,18 +5,21 @@ Alert rule routes:
   PATCH  /projects/{project_id}/alert-rules/{rule_id} — update rule
   DELETE /projects/{project_id}/alert-rules/{rule_id} — delete rule
 """
+from __future__ import annotations
+
 import uuid
-from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
-from pydantic import BaseModel, field_validator
 from typing import Any
+
+from fastapi import APIRouter, Depends, HTTPException, status
+from pydantic import BaseModel, field_validator
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.core.deps import CurrentUser
+from app.models.event import AlertRule
 from app.models.org import OrganizationMember
 from app.models.project import Project
-from app.models.event import AlertRule
 
 router = APIRouter(tags=["Alert Rules"])
 
@@ -36,9 +39,8 @@ class AlertRuleCreate(BaseModel):
         ctype = v.get("type")
         if ctype not in valid_types:
             raise ValueError(f"condition.type must be one of {valid_types}")
-        if ctype == "event_count":
-            if "threshold" not in v:
-                raise ValueError("event_count condition requires 'threshold'")
+        if ctype == "event_count" and "threshold" not in v:
+            raise ValueError("event_count condition requires 'threshold'")
         return v
 
     @field_validator("action")

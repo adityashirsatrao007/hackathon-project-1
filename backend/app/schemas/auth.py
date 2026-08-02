@@ -1,8 +1,9 @@
-from pydantic import BaseModel, EmailStr, field_validator
-from typing import Optional
+from __future__ import annotations
+
 import uuid
 from datetime import datetime
 
+from pydantic import BaseModel, EmailStr, field_validator
 
 # ── Request schemas ───────────────────────────────────────────────────────────
 
@@ -26,7 +27,7 @@ class LoginRequest(BaseModel):
 
 class GoogleCallbackRequest(BaseModel):
     code: str
-    state: Optional[str] = None
+    state: str | None = None
 
 
 # ── Response schemas ──────────────────────────────────────────────────────────
@@ -36,8 +37,8 @@ class UserOut(BaseModel):
 
     id: uuid.UUID
     email: str
-    name: Optional[str]
-    picture: Optional[str]
+    name: str | None
+    picture: str | None
     is_active: bool
     created_at: datetime
 

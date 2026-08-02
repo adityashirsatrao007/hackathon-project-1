@@ -6,9 +6,10 @@ Can also be run as a standalone process:
   python -m app.worker.worker
 """
 import asyncio
+
 from loguru import logger
 
-from app.core.redis import pop_from_queue, close_redis_pool
+from app.core.redis import close_redis_pool, pop_from_queue
 from app.worker.processor import process_event
 
 
@@ -41,8 +42,8 @@ async def run_worker() -> None:
 
 # ── Standalone entry point ─────────────────────────────────────────────────────
 if __name__ == "__main__":
-    import sys
     import os
+    import sys
 
     # Allow running from the backend/ directory
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(__file__))))

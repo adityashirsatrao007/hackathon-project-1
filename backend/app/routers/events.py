@@ -8,9 +8,10 @@ The SDK sends:
   - Authorization: Bearer <public_key>   (or X-Tracelify-Key header)
   - Body: JSON event payload
 """
+from __future__ import annotations
+
 from fastapi import APIRouter, Depends, Header, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from typing import Optional
 
 from app.core.database import get_db
 from app.schemas.event import IngestEventRequest, IngestResponse
@@ -30,8 +31,8 @@ async def ingest_event(
     event: IngestEventRequest,
     db: AsyncSession = Depends(get_db),
     # Accept public_key via Authorization header OR X-Tracelify-Key header
-    authorization: Optional[str] = Header(default=None),
-    x_tracelify_key: Optional[str] = Header(default=None, alias="X-Tracelify-Key"),
+    authorization: str | None = Header(default=None),
+    x_tracelify_key: str | None = Header(default=None, alias="X-Tracelify-Key"),
 ):
     """
     Called by the Tracelify SDK.
@@ -40,7 +41,7 @@ async def ingest_event(
     - Returns 202 Accepted immediately (async processing)
     """
     # Extract public_key from Authorization: Bearer <key> or X-Tracelify-Key
-    public_key: Optional[str] = None
+    public_key: str | None = None
 
     if x_tracelify_key:
         public_key = x_tracelify_key

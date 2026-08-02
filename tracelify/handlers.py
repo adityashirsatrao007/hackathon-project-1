@@ -1,6 +1,8 @@
 import sys
 import traceback
+
 from .hub import get_client
+
 
 def setup_global_handler():
 
